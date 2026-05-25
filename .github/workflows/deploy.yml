@@ -1,0 +1,25 @@
+name: CI/CD Deploy
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Pull latest changes
+        run: git pull origin ${{ github.ref_name }}
+
+      - name: Build and restart containers
+        run: |
+          docker compose down --remove-orphans || true
+          docker compose up -d --build
+
+      - name: Verify service is running
+        run: |
+          sleep 5
+          curl --fail http://localhost:8000 || exit 1

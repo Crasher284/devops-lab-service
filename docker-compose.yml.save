@@ -1,0 +1,31 @@
+version: '3.8'                     # Версия синтаксиса Compose (3.8 – современная)
+
+services:                          # Список контейнеров (сервисов)
+  
+  app:                             # Имя сервиса (будет доступно в сети как "app")
+    build: .                       # Собрать образ из Dockerfile в текущей папке
+    container_name: devops-lab-app # Фиксированное имя контейнера (удобно для логов)
+    ports:
+      - "8000:8000"                # Проброс порта: хост:контейнер
+    restart: unless-stopped        # Автоперезапуск, если упал
+
+  prometheus:
+    image: prom/prometheus:latest  # Берём готовый образ из Docker Hub
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:                       # Монтируем файл конфигурации внутрь контейнера
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    # Команда запуска (можно не указывать, т.к. в образе уже прописана)
+    # Но при необходимости переопределяем:
+    # command: ['--config.file=/etc/prometheus/prometheus.yml']
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:                   # Переменные окружения для Grafana
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    restart: unless-stopped

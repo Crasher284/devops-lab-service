@@ -21,5 +21,14 @@ jobs:
 
       - name: Verify service is running
         run: |
-          sleep 5
-          curl --fail http://localhost:8000 || exit 1
+          for i in {1..30}; do
+            echo "Attempt $i: checking http://localhost:8000..."
+            if curl --fail --silent http://localhost:8000 > /dev/null; then
+              echo "Service is ready!"
+              exit 0
+            fi
+            echo "Not ready yet, waiting 2 seconds..."
+            sleep 2
+          done
+          echo "Service failed to respond after 60 seconds"
+          exit 1
